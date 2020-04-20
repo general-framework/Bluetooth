@@ -22,7 +22,7 @@
 //  THE SOFTWARE.
 //
 
-#if !os(watchOS) && !os(tvOS)
+#if !os(tvOS)
 import Foundation
 import CoreBluetooth
 

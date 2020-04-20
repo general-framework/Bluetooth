@@ -22,7 +22,7 @@
 //  THE SOFTWARE.
 //
 
-#if !os(watchOS) && !os(tvOS)
+#if !os(tvOS) 
 import Foundation
 import CoreBluetooth
 
@@ -106,7 +106,12 @@ public class BKPeripheral: BKPeer, BKCBPeripheralManagerDelegate, BKAvailability
         do {
             try stateMachine.handleEvent(event: .start)
             _configuration = configuration
+            #if !os(watchOS)
             peripheralManager = CBPeripheralManager(delegate: peripheralManagerDelegate, queue: nil, options: nil)
+            #else
+            peripheralManager = CBPeripheralManager()
+            peripheralManager.delegate = peripheralManagerDelegate
+            #endif
         } catch let error {
             throw BKError.internalError(underlyingError: error)
         }
@@ -154,12 +159,16 @@ public class BKPeripheral: BKPeer, BKCBPeripheralManagerDelegate, BKAvailability
             availabilityObserver.availabilityObserver?.availabilityObserver(self, availabilityDidChange: .available)
         }
         if !peripheralManager.isAdvertising {
+            #if !os(watchOS)
             dataService = CBMutableService(type: _configuration.dataServiceUUID, primary: true)
             let properties: CBCharacteristicProperties = [ .read, .notify, .writeWithoutResponse, .write ]
             let permissions: CBAttributePermissions = [ .readable, .writeable ]
             characteristicData = CBMutableCharacteristic(type: _configuration.dataServiceCharacteristicUUID, properties: properties, value: nil, permissions: permissions)
             dataService.characteristics = [ characteristicData ]
             peripheralManager.add(dataService)
+            #else
+            // TODO: complete setuo for iOS
+            #endif
         }
     }
 
